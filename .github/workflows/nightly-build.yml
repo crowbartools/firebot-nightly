@@ -39,7 +39,7 @@ jobs:
 
       - name: 'Set nightly version'
         id: setversion
-        run: echo "::set-output name=version::v${{ steps.readpackage.outputs.version }}-nightly-$(git show -s --format=%h)"
+        run: echo "::set-output name=version::v${{ steps.readpackage.outputs.version }}-nightly-${{ steps.getsha.outputs.sha }}"
 
   windowsBuild:
     name: Build for windows
@@ -77,6 +77,9 @@ jobs:
         env:
           PASSKEY_FOR_FIREBOT_SECRETS: ${{ secrets.PASSKEY_FOR_FIREBOT_SECRETS }}
         run: grunt secrets:decrypt
+
+      - name: Set version
+        run: node update-version.js ${{ needs.checkLatestCommits.outputs.sha }}
 
       - name: Build
         run: grunt build
@@ -127,6 +130,9 @@ jobs:
         env:
           PASSKEY_FOR_FIREBOT_SECRETS: ${{ secrets.PASSKEY_FOR_FIREBOT_SECRETS }}
         run: grunt secrets:decrypt
+
+      - name: Set version
+        run: node update-version.js ${{ needs.checkLatestCommits.outputs.sha }}
 
       - name: Build
         run: grunt build
