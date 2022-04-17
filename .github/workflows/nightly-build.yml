@@ -23,7 +23,7 @@ jobs:
           path: './firebot'
 
       - name: Enter firebot directory
-        run: cd firebot && ls .
+        run: cd firebot && ls -a .
 
       - name: Check if there are new commits
         id: hasNewCommits
