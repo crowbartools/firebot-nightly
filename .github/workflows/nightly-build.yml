@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Clone Crowbartools/Firebot
-        run: git clone https://github.com/crowbartools/firebot.git firebot && git checkout origin/v5
+        run: git clone https://github.com/crowbartools/firebot.git firebot && cd firebot && git checkout origin/v5
 
       - name: Enter firebot directory and checkout v5 branch
         run: cd firebot
