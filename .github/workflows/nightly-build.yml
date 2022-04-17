@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       hasNewCommits: ${{ steps.hasNewCommits.outputs.hasNewCommits }}
-      version: ${{ steps.setversion.outputs.version
+      version: ${{ steps.setversion.outputs.version }}
 
     steps:
       - name: Clone Crowbartools/Firebot
