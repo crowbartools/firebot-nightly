@@ -20,8 +20,8 @@ jobs:
       - name: Clone Crowbartools/Firebot
         run: git clone --branch v5 https://github.com/crowbartools/firebot.git firebot
 
-      - name: Enter firebot directory and checkout v5 branch
-        run: cd firebot
+      - name: Enter firebot directory
+        run: cd firebot && ls .
 
       - name: Check if there are new commits
         id: hasNewCommits
