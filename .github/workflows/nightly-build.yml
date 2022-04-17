@@ -41,7 +41,7 @@ jobs:
     name: Build for windows
     runs-on: windows-latest
     needs: [checkLatestCommits]
-    if: needs.checkLatestCommits.outputs.hasNewCommits !== 'false'
+    if: needs.checkLatestCommits.outputs.hasNewCommits != 'false'
     outputs:
       success: ${{ steps.finished.outputs.success }}
     steps:
@@ -93,7 +93,7 @@ jobs:
     name: Build for debian
     runs-on: ubuntu-latest
     needs: [checkLatestCommits]
-    if: needs.checkLatestCommits.outputs.hasNewCommits !== 'false'
+    if: needs.checkLatestCommits.outputs.hasNewCommits != 'false'
     outputs:
       success: ${{ steps.finished.outputs.success }}
     steps:
