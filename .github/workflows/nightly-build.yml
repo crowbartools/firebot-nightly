@@ -22,7 +22,7 @@ jobs:
           path: './firebot'
 
       - name: Enter firebot directory and checkout v5 branch
-        run: cd firebot && git checkout origin/v5
+        run: cd firebot && git checkout v5
 
       - name: Check if there are new commits
         id: hasNewCommits
@@ -52,7 +52,7 @@ jobs:
           path: './firebot'
 
       - name: Enter firebot directory and checkout v5 branch
-        run: cd firebot && git checkout origin/v5
+        run: cd firebot && git checkout v5
 
       - name: Setup Nodejs
         uses: 'actions/setup-node@v1'
@@ -104,8 +104,7 @@ jobs:
           path: './firebot'
 
       - name: Enter firebot directory and checkout v5 branch
-        run: cd firebot && git checkout origin/v5
-
+        run: cd firebot && git checkout v5
 
       - name: Install Environment Dependencies
         run: sudo apt-get install libx11-dev libxtst-dev libpng-dev
