@@ -16,17 +16,22 @@ jobs:
       version: ${{ steps.setversion.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout crowbartools/firebot:v5
+        uses: actions/checkout@v2
         with:
           token: ${{ github.token }}
           repository: 'crowbartools/firebot'
           ref: 'v5'
           path: '.'
 
+      - name: Set last commit SHA
+        id: getsha
+        run: echo "::set-output name=sha::$(git show -s --format=%H)"
+
       - name: Check if there are new commits
         id: hasNewCommits
         continue-on-error: true
-        run: test -z $(git rev-list --since="24 hours" $(git show -s --format=%H)) && echo "::set-output name=hasNewCommits::false"
+        run: test -z $(git rev-list --since="24 hours" ${{ steps.getsha.outputs.sha }}) && echo "::set-output name=hasNewCommits::false"
 
       - name: Read package.json
         id: readpackage
@@ -35,9 +40,6 @@ jobs:
       - name: 'Set nightly version'
         id: setversion
         run: echo "::set-output name=version::v${{ steps.readpackage.outputs.version }}-nightly-$(git show -s --format=%h)"
-
-      - name: 'Version set to:'
-        run: echo ${{ steps.setversion.outputs.version }}
 
   windowsBuild:
     name: Build for windows
@@ -139,8 +141,8 @@ jobs:
         id: finished
         run: echo "::set-output name=success::1"
 
-  release:
-    name: 'Draft Release'
+  publish:
+    name: 'Publish Release'
     needs: [checkLatestCommits, windowsBuild, ubuntuBuild]
     runs-on: 'windows-latest'
     steps:
@@ -167,8 +169,8 @@ jobs:
           tag_name: ${{ needs.checkLatestCommits.outputs.version }}
           release_name: Release ${{ needs.checkLatestCommits.outputs.version }}
           body: "## v${{ needs.checktag.outputs.version }}\nThis is a nightly build consisting of all changes made to Firebot v5 in the last 24hrs.\n\n##This is a test build and as such support will be limited"
-          draft: true
-          prerelease: false
+          draft: false
+          prerelease: true
 
       - name: Upload Windows Setup.exe
         if: needs.windows.outputs.success == 1
