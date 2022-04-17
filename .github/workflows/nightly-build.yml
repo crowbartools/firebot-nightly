@@ -84,7 +84,7 @@ jobs:
         run: grunt secrets:decrypt
 
       - name: Set version
-        uses: crowbartools/firebot-version-updater@v1.0.0
+        uses: crowbartools/firebot-version-updater@v1.0.1
         with:
           sha: ${{ needs.checkLatestCommits.outputs.sha }}
 
@@ -139,7 +139,7 @@ jobs:
         run: grunt secrets:decrypt
 
       - name: Set version
-        uses: crowbartools/firebot-version-updater@v1.0.0
+        uses: crowbartools/firebot-version-updater@v1.0.1
         with:
           sha: ${{ needs.checkLatestCommits.outputs.sha }}
 
