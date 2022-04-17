@@ -15,12 +15,7 @@ jobs:
 
     steps:
       - name: Clone Crowbartools/Firebot
-        uses: actions/checkout@v3
-        with:
-          repository: 'crowbartools/firebot'
-          fetch_depth: '0'
-          ref: 'v5'
-          path: './firebot'
+        run: mkdir firebot && cd firebot && git clone https://github.com/crowbartools/firebot.git && git checkout origin/v5
 
       - name: Enter firebot directory and checkout v5 branch
         run: cd firebot
@@ -47,14 +42,7 @@ jobs:
       success: ${{ steps.finished.outputs.success }}
     steps:
       - name: Clone Crowbartools/Firebot
-        uses: actions/checkout@v3
-        with:
-          repository: 'crowbartools/firebot'
-          ref: 'v5'
-          path: './firebot'
-
-      - name: Enter firebot directory
-        run: cd firebot
+        run: mkdir firebot && cd firebot && git clone https://github.com/crowbartools/firebot.git && git checkout origin/v5
 
       - name: Setup Nodejs
         uses: 'actions/setup-node@v1'
@@ -100,14 +88,7 @@ jobs:
       success: ${{ steps.finished.outputs.success }}
     steps:
       - name: Clone Crowbartools/Firebot
-        uses: actions/checkout@v3
-        with:
-          repository: 'crowbartools/firebot'
-          ref: 'v5'
-          path: './firebot'
-
-      - name: Enter firebot directory
-        run: cd firebot
+        run: mkdir firebot && cd firebot && git clone https://github.com/crowbartools/firebot.git && git checkout origin/v5
 
       - name: Install Environment Dependencies
         run: sudo apt-get install libx11-dev libxtst-dev libpng-dev
