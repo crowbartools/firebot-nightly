@@ -38,7 +38,7 @@ jobs:
     needs: [checkLatestCommits]
     if: needs.checkLatestCommits.outputs.hasNewCommits != 'false'
     outputs:
-      outputs: ${{ steps.setVersion.outputs.version }}
+      version: ${{ steps.setVersion.outputs.version }}
       success: ${{ steps.finished.outputs.success }}
 
     steps:
