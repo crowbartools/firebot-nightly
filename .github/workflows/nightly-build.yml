@@ -35,7 +35,6 @@ jobs:
         run: echo "::set-output name=version::v${{ steps.readpackage.outputs.version }}-nightly-$(git show -s --format=%h)"
 
       - name: 'Version set to:'
-        id: setversion
         run: echo ${{ steps.setversion.outputs.version }}
 
   windowsBuild:
