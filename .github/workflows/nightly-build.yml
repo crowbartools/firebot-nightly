@@ -14,6 +14,9 @@ jobs:
       version: ${{ steps.setversion.outputs.version }}
 
     steps:
+      - name: Update git
+        rub: sudo apt-get install git
+
       - name: Clone Crowbartools/Firebot
         run: git clone --branch v5 https://github.com/crowbartools/firebot.git firebot && cd firebot
 
