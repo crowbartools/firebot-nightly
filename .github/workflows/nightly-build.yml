@@ -20,6 +20,7 @@ jobs:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           repository: 'crowbartools/firebot'
           ref: 'v5'
+          path: './firebot'
 
       - name: Enter firebot directory
         run: cd firebot && ls .
