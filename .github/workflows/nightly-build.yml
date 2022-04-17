@@ -30,11 +30,13 @@ jobs:
 
       - name: Read package.json
         id: readpackage
-        working-directory: './firebot'
-        uses: gregoranders/nodejs-project-info@v0.0.1
+        uses: gregoranders/nodejs-project-info@v0.0.18
+        with:
+          path: './firebot/package.json'
 
       - name: 'Set nightly version'
         id: setversion
+        working-directory: './firebot'
         run: echo "::set-output name=version::v${{ steps.readpackage.outputs.version }}-nightly-$(git show -s --format=%h)"
 
   windowsBuild:
