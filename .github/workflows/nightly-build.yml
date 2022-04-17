@@ -18,7 +18,7 @@ jobs:
         run: sudo apt-get install git
 
       - name: Clone Crowbartools/Firebot
-        run: git clone --branch v5 https://github.com/crowbartools/firebot.git firebot && cd firebot
+        run: git clone --branch v5 https://github.com/crowbartools/firebot.git firebot
 
       - name: Enter firebot directory and checkout v5 branch
         run: cd firebot
