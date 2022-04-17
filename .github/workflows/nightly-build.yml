@@ -1,3 +1,5 @@
+name: Build Nightly
+
 # run at midnight, every night
 on:
   workflow_dispatch:
