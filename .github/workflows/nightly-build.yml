@@ -38,7 +38,7 @@ jobs:
     needs: [checkLatestCommits]
     if: needs.checkLatestCommits.outputs.hasNewCommits != 'false'
     outputs:
-      outputs: ${{ steps.getVersion.outputs.version }}
+      outputs: ${{ steps.setVersion.outputs.version }}
       success: ${{ steps.finished.outputs.success }}
 
     steps:
@@ -94,8 +94,8 @@ jobs:
     needs: [checkLatestCommits]
     if: needs.checkLatestCommits.outputs.hasNewCommits != 'false'
     outputs:
-      success: ${{ steps.finished.outputs.success }}
       version: ${{ steps.setVersion.outputs.success }}
+      success: ${{ steps.finished.outputs.success }}
     steps:
       - uses: actions/checkout@v2
         with:
