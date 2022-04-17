@@ -27,7 +27,6 @@ jobs:
       - name: Check if there are new commits
         id: hasNewCommits
         continue-on-error: true
-        name: check latest commit is less than a day
         run: test -z $(git rev-list --since="24 hours" $(git show -s --format=%H)) && echo "::set-output name=hasNewCommits::false"
 
       - name: Read package.json
