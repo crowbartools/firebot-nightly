@@ -14,30 +14,29 @@ jobs:
       version: ${{ steps.setversion.outputs.version }}
 
     steps:
-
       - uses: actions/checkout@v2
         with:
           token: ${{ github.token }}
           repository: 'crowbartools/firebot'
           ref: 'v5'
-          path: './firebot'
+          path: '.'
 
       - name: Check if there are new commits
         id: hasNewCommits
         continue-on-error: true
-        working-directory: './firebot'
         run: test -z $(git rev-list --since="24 hours" $(git show -s --format=%H)) && echo "::set-output name=hasNewCommits::false"
 
       - name: Read package.json
         id: readpackage
         uses: gregoranders/nodejs-project-info@v0.0.18
-        with:
-          path: './firebot/package.json'
 
       - name: 'Set nightly version'
         id: setversion
-        working-directory: './firebot'
         run: echo "::set-output name=version::v${{ steps.readpackage.outputs.version }}-nightly-$(git show -s --format=%h)"
+
+      - name: 'Version set to:'
+        id: setversion
+        run: echo ${{ steps.setversion.outputs.version }}
 
   windowsBuild:
     name: Build for windows
@@ -47,8 +46,12 @@ jobs:
     outputs:
       success: ${{ steps.finished.outputs.success }}
     steps:
-      - name: Clone Crowbartools/Firebot
-        run: mkdir firebot && cd firebot && git clone https://github.com/crowbartools/firebot.git && git checkout origin/v5
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ github.token }}
+          repository: 'crowbartools/firebot'
+          ref: 'v5'
+          path: '.'
 
       - name: Setup Nodejs
         uses: 'actions/setup-node@v1'
@@ -93,8 +96,12 @@ jobs:
     outputs:
       success: ${{ steps.finished.outputs.success }}
     steps:
-      - name: Clone Crowbartools/Firebot
-        run: git clone https://github.com/crowbartools/firebot.git firebot && git checkout origin/v5
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ github.token }}
+          repository: 'crowbartools/firebot'
+          ref: 'v5'
+          path: '.'
 
       - name: Install Environment Dependencies
         run: sudo apt-get install libx11-dev libxtst-dev libpng-dev
