@@ -168,7 +168,7 @@ jobs:
         with:
           tag_name: ${{ needs.checkLatestCommits.outputs.version }}
           release_name: Release ${{ needs.checkLatestCommits.outputs.version }}
-          body: "This is a nightly build consisting of all changes made to Firebot v5 in the last 24hrs.\n\n##This is a test build and as such support will be limited"
+          body: "Nightly build consisting of all changes made to Firebot v5 in the last 24hrs.\n\nThis is a test build; as such support will be limited."
           draft: false
           prerelease: true
 
