@@ -42,7 +42,8 @@ jobs:
       success: ${{ steps.finished.outputs.success }}
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout firebot repo
+        uses: actions/checkout@v2
         with:
           token: ${{ github.token }}
           repository: 'crowbartools/firebot'
@@ -94,10 +95,11 @@ jobs:
     needs: [checkLatestCommits]
     if: needs.checkLatestCommits.outputs.hasNewCommits != 'false'
     outputs:
-      version: ${{ steps.setVersion.outputs.success }}
+      version: ${{ steps.setVersion.outputs.version }}
       success: ${{ steps.finished.outputs.success }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Firebot repo
+        uses: actions/checkout@v2
         with:
           token: ${{ github.token }}
           repository: 'crowbartools/firebot'
