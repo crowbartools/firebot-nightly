@@ -17,8 +17,12 @@ jobs:
       - name: Update git
         run: sudo apt-get install git
 
-      - name: Clone Crowbartools/Firebot
-        run: git clone --branch v5 https://github.com/crowbartools/firebot.git firebot
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          repository: 'crowbartools/firebot'
+          ref: 'v5'
 
       - name: Enter firebot directory
         run: cd firebot && ls .
