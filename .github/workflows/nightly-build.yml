@@ -22,16 +22,15 @@ jobs:
           ref: 'v5'
           path: './firebot'
 
-      - name: Enter firebot directory
-        run: cd firebot && ls -a .
-
       - name: Check if there are new commits
         id: hasNewCommits
         continue-on-error: true
+        working-directory: './firebot'
         run: test -z $(git rev-list --since="24 hours" $(git show -s --format=%H)) && echo "::set-output name=hasNewCommits::false"
 
       - name: Read package.json
         id: readpackage
+        working-directory: './firebot'
         uses: gregoranders/nodejs-project-info@v0.0.1
 
       - name: 'Set nightly version'
