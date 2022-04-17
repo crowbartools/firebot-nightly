@@ -174,7 +174,7 @@ jobs:
           release_name: Release v${{ needs.windowsBuild.outputs.version }}
           body: "Nightly build consisting of all changes made to Firebot v5 in the last 24hrs.\n\nThis is a test build; as such support will be limited.\n\nThese builds are for testing purposes only\nThese builds may be buggy; use at your own risk. We aren't responsible if they bork your Firebot setups\nNightly builds do not auto-update to newer nightly builds\nNightly builds will auto-update to new main-flow builds\nThese builds are only limitedly supported\nFeatures/changes in these builds are not guaranteed to pass into main-flow builds"
           draft: false
-          prerelease: true
+          prerelease: false
 
       - name: Upload Windows Setup.exe
         if: needs.windowsBuild.outputs.success == 1
