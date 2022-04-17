@@ -14,10 +14,7 @@ jobs:
       version: ${{ steps.setversion.outputs.version }}
 
     steps:
-      - name: Update git
-        run: sudo apt-get install git
 
-    steps:
       - uses: actions/checkout@v2
         with:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
