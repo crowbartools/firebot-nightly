@@ -1,0 +1,197 @@
+# run at midnight, every night
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+
+  checkLatestCommits:
+    name: Check latest commits
+    runs-on: ubuntu-latest
+    outputs:
+      hasNewCommits: ${{ steps.hasNewCommits.outputs.hasNewCommits }}
+      version: ${{ steps.setversion.outputs.version
+
+    steps:
+      - name: Clone Crowbartools/Firebot
+        uses: actions/checkout@v3
+        with:
+          repository: 'crowbartools/firebot'
+          fetch_depth: 0
+          path: './firebot'
+
+      - name: Enter firebot directory and checkout v5 branch
+        run: cd firebot && git checkout origin/v5
+
+      - name: Check if there are new commits
+        id: hasNewCommits
+        continue-on-error: true
+        name: check latest commit is less than a day
+        run: test -z $(git rev-list --since="24 hours" $(git show -s --format=%H)) && echo "::set-output name=hasNewCommits::false"
+
+      - name: Read package.json
+        id: readpackage
+        uses: gregoranders/nodejs-project-info@v0.0.1
+
+      - name: 'Set nightly version'
+        id: setversion
+        run: echo "::set-output name=version::v${{ steps.readpackage.outputs.version }}-nightly-$(git show -s --format=%h)"
+
+  windowsBuild:
+    name: Build for windows
+    runs-on: windows-latest
+    needs: [checkLatestCommits]
+    if: {{ needs.checkLatestCommits.outputs.hasNewCommits !== 'false' }}
+    outputs:
+      success: ${{ steps.finished.outputs.success }}
+    steps:
+      - name: Clone Crowbartools/Firebot
+        uses: actions/checkout@v3
+        with:
+          repository: 'crowbartools/firebot'
+          path: './firebot'
+
+      - name: Enter firebot directory and checkout v5 branch
+        run: cd firebot && git checkout origin/v5
+
+      - name: Setup Nodejs
+        uses: 'actions/setup-node@v1'
+        with:
+          node-version: '14.x'
+
+      - name: Install Global Dependencies
+        shell: bash
+        run: |
+          npm config set msvs_version 2019
+          npm install --quiet --global --production windows-build-tools@4.0.0 grunt-cli node-gyp
+
+      - name: Install Project Dependencies
+        run: npm ci --quiet
+
+      - name: Rebuild Robotjs for Electron
+        run: npm run rebuild
+
+      - name: Decrypt Secrets.gpg
+        env:
+          PASSKEY_FOR_FIREBOT_SECRETS: ${{ secrets.PASSKEY_FOR_FIREBOT_SECRETS }}
+        run: grunt secrets:decrypt
+
+      - name: Build
+        run: grunt build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ runner.os }}
+          path: './dist/install/${{ runner.os }}/'
+
+      - name: Finishing
+        id: finished
+        run: echo "::set-output name=success::1"
+
+  ubuntuBuild:
+    name: Build for debian
+    runs-on: ubuntu-latest
+    needs: [checkLatestCommits]
+    if: {{ needs.checkLatestCommits.outputs.hasNewCommits !== 'false' }}
+    outputs:
+      success: ${{ steps.finished.outputs.success }}
+    steps:
+      - name: Clone Crowbartools/Firebot
+        uses: actions/checkout@v3
+        with:
+          repository: 'crowbartools/firebot'
+          path: './firebot'
+
+      - name: Enter firebot directory and checkout v5 branch
+        run: cd firebot && git checkout origin/v5
+
+
+      - name: Install Environment Dependencies
+        run: sudo apt-get install libx11-dev libxtst-dev libpng-dev
+
+      - name: Setup Nodejs
+        uses: 'actions/setup-node@v2'
+        with:
+          node-version: '14.x'
+
+      - name: Install Global Dependencies
+        run: npm install --quiet --global --production grunt-cli node-gyp
+
+      - name: Install Project Dependencies
+        run: npm ci --quiet
+
+      - name: Rebuild Robotjs for Electron
+        run: npm run rebuild
+
+      - name: Decrypt Secrets.gpg
+        env:
+          PASSKEY_FOR_FIREBOT_SECRETS: ${{ secrets.PASSKEY_FOR_FIREBOT_SECRETS }}
+        run: grunt secrets:decrypt
+
+      - name: Build
+        run: grunt build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ runner.os }}
+          path: './dist/install/${{ runner.os }}/'
+
+      - name: Finishing
+        id: finished
+        run: echo "::set-output name=success::1"
+
+  release:
+    name: 'Draft Release'
+    needs: [checkLatestCommits, windowsBuild, ubuntuBuild]
+    runs-on: 'windows-latest'
+    steps:
+      - name: Download Windows Artifacts
+        if: needs.windowsBuild.outputs.success == 1
+        uses: 'actions/download-artifact@v2'
+        with:
+          name: 'Windows'
+          path: './bundles/'
+
+      - name: Download Linux Artifacts
+        if: needs.ubuntuBuild.outputs.success == 1
+        uses: 'actions/download-artifact@v2'
+        with:
+          name: 'Linux'
+          path: './bundles/'
+
+      - name: Draft Release
+        id: draft
+        uses: 'actions/create-release@v1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.checkLatestCommits.outputs.version }}
+          release_name: Release ${{ needs.checkLatestCommits.outputs.version }}
+          body: "## v${{ needs.checktag.outputs.version }}\nThis is a nightly build consisting of all changes made to Firebot v5 in the last 24hrs.\n\n##This is a test build and as such support will be limited"
+          draft: true
+          prerelease: false
+
+      - name: Upload Windows Setup.exe
+        if: needs.windows.outputs.success == 1
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.draft.outputs.upload_url }}
+          asset_path: './bundles/FirebotV5Setup.exe'
+          asset_name: 'Firebot-${{ needs.checkLatestCommits.outputs.version }}.exe'
+          asset_content_type: application/octet-stream
+
+      - name: Upload Tarball file
+        if: needs.linux.outputs.success == 1
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.draft.outputs.upload_url }}
+          asset_path: './bundles/Firebot-linux-x64.tar.gz'
+          asset_name: 'firebot-${{ needs.checkLatestCommits.outputs.version }}.tar.gz'
+          asset_content_type: application/octet-stream
