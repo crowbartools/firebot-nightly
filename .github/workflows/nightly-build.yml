@@ -131,8 +131,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           token: ${{ env.GITHUB_TOKEN }}
-          draft: true
-          prerelease: false
+          draft: false
+          prerelease: true
           tag_name: v${{ needs.checkversion.outputs.version }}
           name: Nightly v${{ needs.checkversion.outputs.version }}
           body: ${{ needs.gitInfo.outputs.patchnotes }}
