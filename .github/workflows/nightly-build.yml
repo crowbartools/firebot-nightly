@@ -16,6 +16,9 @@ jobs:
       patchnotes: ${{ steps.getinfo.outputs.patchnotes }}
       dobuild: ${{ steps.dobuild.outputs.dobuild }}
     steps:
+      - name: "Checkout crowbartools/firebot-nightly:master"
+        uses: actions/checkout@3
+
       - name: Checkout crowbartools/firebot:v5
         uses: actions/checkout@v3
         with:
@@ -48,7 +51,10 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout repo
+      - name: Checkout Nightly Repo
+        uses: actions/checkout@3
+
+      - name: Checkout Firebot repo
         uses: actions/checkout@v3
         with:
           clean: false
