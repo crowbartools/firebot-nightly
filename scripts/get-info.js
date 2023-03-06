@@ -29,7 +29,7 @@ output('version', `${package.version}-nightly-${year}.${month}.${day}`);
 // build patch-notes
 const commits = readFileSync(path.resolve(root, './commits.txt'));
 output('patchnotes',
-    readFileSync(path.resolve(__dirname, './patch-notes-template.md'))
+    readFileSync(path.resolve(__dirname, './patch-notes-template.md'), 'utf-8')
         .replace('./\{(\d+)\}/g', (val, match) => {
             if (match === 0 || match === '0') {
                 return nightlyversion;
