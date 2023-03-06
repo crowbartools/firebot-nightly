@@ -148,7 +148,7 @@ jobs:
         with:
           token: ${{ env.GITHUB_TOKEN }}
           draft: false
-          prerelease: true
+          prerelease: false
           tag_name: v${{ needs.getInfo.outputs.version }}
           name: Nightly v${{ needs.getInfo.outputs.version }}
           body: ${{ needs.getInfo.outputs.patchnotes }}
