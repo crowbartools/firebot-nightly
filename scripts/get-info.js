@@ -16,7 +16,7 @@ const output = (key, value) => {
 }
 
 // deduce version for nightly
-const packagePath = path.resolve('../../package.json');
+const packagePath = path.resolve(__dirname, '../../package.json');
 const package = JSON.parse(readFileSync(packagePath, 'utf-8'));
 const curDate = new Date();
 const year = curDate.getFullYear().toString().slice(-2);
