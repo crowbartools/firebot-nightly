@@ -18,7 +18,8 @@ jobs:
     steps:
       - name: Checkout crowbartools/firebot-nightly:master
         uses: actions/checkout@v3
-        path: './nightly'
+        with:
+          path: './nightly/'
 
       - name: Checkout crowbartools/firebot:v5
         uses: actions/checkout@v3
@@ -54,6 +55,8 @@ jobs:
     steps:
       - name: Checkout Nightly Repo
         uses: actions/checkout@v3
+        with:
+          path: './nightly/'
 
       - name: Checkout Firebot repo
         uses: actions/checkout@v3
@@ -112,7 +115,7 @@ jobs:
         run: grunt secrets:decrypt
 
       - name: Set version of nightly
-        run: node ./scripts/set-version.js ${{ needs.getInfo.outputs.version }}
+        run: node ./nightly/scripts/set-version.js ${{ needs.getInfo.outputs.version }}
 
       - name: Build for Platform
         run: grunt build
