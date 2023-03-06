@@ -2,6 +2,8 @@ const path = require('path');
 const { randomBytes } = require('crypto');
 const { appendFileSync, readFileSync } = require('fs');
 
+const root = path.resolve(__dirname, '../../');
+
 const outfile = process.argv.slice(2).join(' ');
 const output = (key, value) => {
     let data = "";
@@ -16,7 +18,7 @@ const output = (key, value) => {
 }
 
 // deduce version for nightly
-const packagePath = path.resolve(__dirname, '../../package.json');
+const packagePath = path.resolve(root, './package.json');
 const package = JSON.parse(readFileSync(packagePath, 'utf-8'));
 const curDate = new Date();
 const year = curDate.getFullYear().toString().slice(-2);
@@ -25,7 +27,7 @@ const day = ('0' + curDate.getDate()).slice(-2);
 output('version', `${package.version}-nightly-${year}.${month}.${day}`);
 
 // build patch-notes
-const commits = readFileSync(path.resolve(__dirname, '../commits.txt'));
+const commits = readFileSync(path.resolve(root, './commits.txt'));
 output('patchnotes',
     readFileSync(path.resolve(__dirname, './patch-notes-template.md'))
         .replace('./\{(\d+)\}/g', (val, match) => {
