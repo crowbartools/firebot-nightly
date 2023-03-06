@@ -5,7 +5,7 @@ const { appendFileSync, readFileSync } = require('fs');
 const outfile = process.argv.slice(2).join(' ');
 const output = (key, value) => {
     let data = "";
-    if (value.contains('\r') || value.contains('\n')) {
+    if (/[\r\n]/.test(value)) {
         const delimiter = randomBytes(32).toString('base64');
         data = `${key}<<${delimiter}\n${value}\n${delimiter}`
     } else {
@@ -22,8 +22,7 @@ const curDate = new Date();
 const year = curDate.getFullYear().toString().slice(-2);
 const month = ("0" + (curDate.getMonth() + 1)).slice(-2);
 const day = ('0' + curDate.getDate()).slice(-2);
-const nightlyversion = `${package.version}-nightly-${year}.${month}.${day}`;
-output('version', nightlyversion);
+output('version', `${package.version}-nightly-${year}.${month}.${day}`);
 
 // build patch-notes
 const commits = readFileSync(path.resolve(__dirname, '../commits.txt'));
