@@ -3,7 +3,7 @@ const { readFileSync, writeFileSync } = require('fs');
 const path = require('path');
 
 const packagePath = path.resolve(__dirname, '../../package.json');
-package.version = version;
 const package = JSON.parse(readFileSync(packagePath, 'utf-8'));
+package.version = version;
 
 writeFileSync(packagePath, JSON.stringify(package), 'utf-8');
