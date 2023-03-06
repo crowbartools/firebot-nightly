@@ -16,8 +16,9 @@ jobs:
       patchnotes: ${{ steps.getinfo.outputs.patchnotes }}
       dobuild: ${{ steps.dobuild.outputs.dobuild }}
     steps:
-      - name: "Checkout crowbartools/firebot-nightly:master"
+      - name: Checkout crowbartools/firebot-nightly:master
         uses: actions/checkout@v3
+        path: './nightly'
 
       - name: Checkout crowbartools/firebot:v5
         uses: actions/checkout@v3
@@ -35,7 +36,7 @@ jobs:
 
       - name: Get Firebot info
         id: getinfo
-        run: node ./scripts/get-info.js $GITHUB_OUTPUT
+        run: node ./nightly/scripts/get-info.js $GITHUB_OUTPUT
 
       - name: Check if there are new commits
         id: dobuild
