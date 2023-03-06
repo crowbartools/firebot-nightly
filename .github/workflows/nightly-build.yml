@@ -8,198 +8,136 @@ on:
 
 jobs:
 
-  checkLatestCommits:
-    name: Check latest commits
+  getInfo:
+    name: Get build Info
     runs-on: ubuntu-latest
     outputs:
-      hasNewCommits: ${{ steps.hasNewCommits.outputs.hasNewCommits }}
-
+      version: ${{ steps.getinfo.outputs.version }}
+      patchnotes: ${{ steps.getinfo.outputs.patchnotes }}
+      dobuild: ${{ steps.dobuild.outputs.dobuild }}
     steps:
       - name: Checkout crowbartools/firebot:v5
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
-          token: ${{ github.token }}
+          fetch-depth: 0
           repository: 'crowbartools/firebot'
           ref: 'v5'
           path: '.'
 
-      - name: Get last commit SHA
-        id: getsha
-        run: echo "::set-output name=sha::$(git show -s --format=%H)"
+      - name: Get commit messages
+        id: commits
+        shell: bash
+        run: git log --pretty=format:'- %s' --branches=origin/v5 $(git describe --tags `git rev-list --tags --max-count=1`)..HEAD >> commits.txt
+
+      - name: Get Firebot info
+        id: getinfo
+        run: node ./scripts/get-info.js $GITHUB_OUTPUT
 
       - name: Check if there are new commits
-        id: hasNewCommits
+        id: dobuild
         continue-on-error: true
-        run: test -z $(git rev-list --since="24 hours" ${{ steps.getsha.outputs.sha }}) && echo "::set-output name=hasNewCommits::false"
+        run: test -z "$(git rev-list --since="24 hours" $(git show -s --format=%H))" && echo "dobuild=false" >> $GITHUB_OUTPUT
 
-  windowsBuild:
-    name: Build for windows
-    runs-on: windows-2019
-    needs: [checkLatestCommits]
-    if: needs.checkLatestCommits.outputs.hasNewCommits != 'false'
-    outputs:
-      version: ${{ steps.setVersion.outputs.version }}
-      success: ${{ steps.finished.outputs.success }}
-
+  compile:
+    name: 'Compile'
+    needs: [getInfo]
+    if: needs.getInfo.outputs.dobuild != 'false'
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout firebot repo
-        uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v3
         with:
-          token: ${{ github.token }}
           repository: 'crowbartools/firebot'
           ref: 'v5'
           path: '.'
 
       - name: Setup Nodejs
-        uses: 'actions/setup-node@v1'
+        uses: actions/setup-node@v3
         with:
-          node-version: '14.x'
+          node-version: '14'
 
-      - name: Update NPM
+      - name: Install correct npm version
         run: npm install -g npm@8.16.0
 
-      - name: Install Global Dependencies
+      - name: Windows Build Prep
+        if: runner.os == 'windows'
         shell: bash
         run: |
-          npm config set msvs_version 2019
-          npm install --quiet --global --production windows-build-tools@4.0.0 grunt-cli node-gyp
+          npm config set msvs_version 2022
+          npm install --global --production --omit=dev windows-build-tools@4.0.0
 
-      - name: Install Project Dependencies
-        run: npm ci --quiet
-
-      - name: Rebuild Robotjs for Electron
-        run: npm run rebuild
-
-      - name: Decrypt Secrets.gpg
-        env:
-          PASSKEY_FOR_FIREBOT_SECRETS: ${{ secrets.PASSKEY_FOR_FIREBOT_SECRETS }}
-        run: grunt secrets:decrypt
-
-      - name: Set version
-        id: setVersion
-        uses: crowbartools/firebot-version-updater@v1.0.3
-
-      - name: Build
-        run: grunt build
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+      - name: Restore Robotjs from cache
+        id: robotjs-cache
+        uses: actions/cache/restore@v3
         with:
-          name: ${{ runner.os }}
-          path: './dist/install/${{ runner.os }}/'
+          key: ${{ runner.os }}-robotjs
+          path: ./node_modules/robotjs/
 
-      - name: Finishing
-        id: finished
-        run: echo "::set-output name=success::1"
-
-  ubuntuBuild:
-    name: Build for debian
-    runs-on: ubuntu-latest
-    needs: [checkLatestCommits]
-    if: needs.checkLatestCommits.outputs.hasNewCommits != 'false'
-    outputs:
-      version: ${{ steps.setVersion.outputs.version }}
-      success: ${{ steps.finished.outputs.success }}
-    steps:
-      - name: Checkout Firebot repo
-        uses: actions/checkout@v2
-        with:
-          token: ${{ github.token }}
-          repository: 'crowbartools/firebot'
-          ref: 'v5'
-          path: '.'
-
-      - name: Install Environment Dependencies
+      - name: Linux Build Prep
+        if: runner.os == 'linux'
         run: sudo apt-get install libx11-dev libxtst-dev libpng-dev
 
-      - name: Setup Nodejs
-        uses: 'actions/setup-node@v2'
-        with:
-          node-version: '14.x'
-
-      - name: Update NPM
-        run: npm install -g npm@8.16.0
-
       - name: Install Global Dependencies
-        run: npm install --quiet --global --production grunt-cli node-gyp
+        run: npm install --global --production --omit=dev grunt-cli node-gyp
 
       - name: Install Project Dependencies
-        run: npm ci --quiet
+        run: npm install
 
       - name: Rebuild Robotjs for Electron
+        if: steps.robotjs-cache.outputs.cache-hit != 'true'
         run: npm run rebuild
+
+      - name: Cache Robotjs build
+        if: steps.robotjs-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v3
+        with:
+          key: ${{ runner.os }}-robotjs
+          path: ./node_modules/robotjs/
 
       - name: Decrypt Secrets.gpg
         env:
           PASSKEY_FOR_FIREBOT_SECRETS: ${{ secrets.PASSKEY_FOR_FIREBOT_SECRETS }}
         run: grunt secrets:decrypt
 
-      - name: Set version
-        id: setVersion
-        uses: crowbartools/firebot-version-updater@v1.0.3
+      - name: Set version of nightly
+        run: node ./scripts/set-version.js ${{ needs.getInfo.outputs.version }}
 
-      - name: Build
+      - name: Build for Platform
         run: grunt build
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ runner.os }}
-          path: './dist/install/${{ runner.os }}/'
+          path: ./dist/install/${{ runner.os == 'macOS' && 'darwin' || runner.os }}/
 
-      - name: Finishing
-        id: finished
-        run: echo "::set-output name=success::1"
-
-  publish:
-    name: 'Publish Release'
-    needs: [checkLatestCommits, windowsBuild, ubuntuBuild]
-    runs-on: 'windows-latest'
+  draft:
+    name: Draft Github Release
+    needs: [getInfo, compile]
+    if: needs.getInfo.outputs.dobuild != 'false'
+    runs-on: ubuntu-latest
     steps:
-      - name: Download Windows Artifacts
-        if: needs.windowsBuild.outputs.success == 1
-        uses: 'actions/download-artifact@v2'
+      - name: Download Compilation Artifacts
+        uses: actions/download-artifact@v3
         with:
-          name: 'Windows'
-          path: './bundles/'
+          path: ./bundles/
 
-      - name: Download Linux Artifacts
-        if: needs.ubuntuBuild.outputs.success == 1
-        uses: 'actions/download-artifact@v2'
-        with:
-          name: 'Linux'
-          path: './bundles/'
-
-      - name: Draft Release
-        id: draft
-        uses: 'actions/create-release@v1'
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ needs.windowsBuild.outputs.version }}
-          release_name: Release v${{ needs.windowsBuild.outputs.version }}
-          body: "Nightly build consisting of all changes made to Firebot v5 in the last 24hrs.\n\nThis is a test build; as such support will be limited.\n\nThese builds are for testing purposes only\nThese builds may be buggy; use at your own risk. We aren't responsible if they bork your Firebot setups\nNightly builds do not auto-update to newer nightly builds\nNightly builds will auto-update to new main-flow builds\nThese builds are only limitedly supported\nFeatures/changes in these builds are not guaranteed to pass into main-flow builds"
-          draft: false
+          token: ${{ env.GITHUB_TOKEN }}
+          draft: true
           prerelease: false
-
-      - name: Upload Windows Setup.exe
-        if: needs.windowsBuild.outputs.success == 1
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.draft.outputs.upload_url }}
-          asset_path: './bundles/FirebotV5Setup.exe'
-          asset_name: 'Firebot-v${{ needs.windowsBuild.outputs.version }}.exe'
-          asset_content_type: application/octet-stream
-
-      - name: Upload Tarball file
-        if: needs.ubuntuBuild.outputs.success == 1
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.draft.outputs.upload_url }}
-          asset_path: './bundles/Firebot-linux-x64.tar.gz'
-          asset_name: 'firebot-v${{ needs.ubuntuBuild.outputs.version }}.tar.gz'
-          asset_content_type: application/octet-stream
+          tag_name: v${{ needs.checkversion.outputs.version }}
+          name: Nightly v${{ needs.checkversion.outputs.version }}
+          body: ${{ needs.gitInfo.outputs.patchnotes }}
+          generate_release_notes: false
+          files: |
+            ./bundles/Windows/firebot-v${{ needs.getInfo.outputs.version }}-setup.exe
+            ./bundles/Linux/firebot-v${{ needs.getInfo.outputs.version }}-linux-x64.tar.gz
+            ./bundles/macOS/firebot-v${{ needs.getInfo.outputs.version }}-macos-x64.dmg
