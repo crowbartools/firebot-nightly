@@ -19,6 +19,7 @@ jobs:
       - name: Checkout crowbartools/firebot:v5
         uses: actions/checkout@v3
         with:
+          clean: false
           fetch-depth: 0
           repository: 'crowbartools/firebot'
           ref: 'v5'
@@ -50,6 +51,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
+          clean: false
           repository: 'crowbartools/firebot'
           ref: 'v5'
           path: '.'
