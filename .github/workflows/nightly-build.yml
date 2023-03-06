@@ -37,6 +37,7 @@ jobs:
           pwd
           git status
           git log --pretty=format:'- %s' --branches=v5 $(git describe --tags `git rev-list --tags --max-count=1`)..HEAD >> commits.txt
+          echo "$(<commits.txt)"
 
       - name: Get Firebot info
         id: getinfo
@@ -150,7 +151,7 @@ jobs:
           prerelease: true
           tag_name: v${{ needs.getInfo.outputs.version }}
           name: Nightly v${{ needs.getInfo.outputs.version }}
-          body: ${{ needs.gitInfo.outputs.patchnotes }}
+          body: ${{ needs.getInfo.outputs.patchnotes }}
           generate_release_notes: false
           files: |
             ./bundles/Windows/firebot-v${{ needs.getInfo.outputs.version }}-setup.exe
