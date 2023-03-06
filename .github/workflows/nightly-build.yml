@@ -33,7 +33,10 @@ jobs:
       - name: Get commit messages
         id: commits
         shell: bash
-        run: git log --pretty=format:'- %s' --branches=origin/v5 $(git describe --tags `git rev-list --tags --max-count=1`)..HEAD >> commits.txt
+        run: |
+          pwd
+          git status
+          git log --pretty=format:'- %s' --branches=v5 $(git describe --tags `git rev-list --tags --max-count=1`)..HEAD >> commits.txt
 
       - name: Get Firebot info
         id: getinfo
@@ -145,8 +148,8 @@ jobs:
           token: ${{ env.GITHUB_TOKEN }}
           draft: false
           prerelease: true
-          tag_name: v${{ needs.checkversion.outputs.version }}
-          name: Nightly v${{ needs.checkversion.outputs.version }}
+          tag_name: v${{ needs.getInfo.outputs.version }}
+          name: Nightly v${{ needs.getInfo.outputs.version }}
           body: ${{ needs.gitInfo.outputs.patchnotes }}
           generate_release_notes: false
           files: |
