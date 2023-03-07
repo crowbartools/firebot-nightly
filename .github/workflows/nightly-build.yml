@@ -57,6 +57,8 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-10.15]
     runs-on: ${{ matrix.os }}
+    env:
+
     steps:
       - name: Checkout Firebot repo
         uses: actions/checkout@v3
@@ -88,6 +90,7 @@ jobs:
 
       - name: Restore Robotjs from cache
         id: robotjs-cache
+        if: vars.FIREBOT_REBUILD_ROBOTJS != 'true'
         uses: actions/cache/restore@v3
         with:
           key: ${{ runner.os }}-robotjs
