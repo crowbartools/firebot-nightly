@@ -45,6 +45,7 @@ jobs:
 
       - name: Check if there are new commits
         id: dobuild
+        if: ${{ github.event_name !== 'workflow_dispatch' }}
         continue-on-error: true
         run: test -z "$(git rev-list --since="24 hours" $(git show -s --format=%H))" && echo "dobuild=false" >> $GITHUB_OUTPUT
 
