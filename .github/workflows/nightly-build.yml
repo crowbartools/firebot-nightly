@@ -54,7 +54,7 @@ jobs:
     if: needs.getInfo.outputs.dobuild != 'false'
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest, macos-10.15]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Firebot repo
