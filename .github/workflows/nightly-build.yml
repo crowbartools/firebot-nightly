@@ -57,8 +57,6 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-12]
     runs-on: ${{ matrix.os }}
-    env:
-
     steps:
       - name: Checkout Firebot repo
         uses: actions/checkout@v3
