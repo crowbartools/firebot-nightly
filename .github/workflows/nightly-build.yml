@@ -71,6 +71,9 @@ jobs:
         with:
           path: './nightly/'
 
+      - name: Install Python deps
+        run: python -m pip install --upgrade packaging pip setuptools
+
       - name: Setup Nodejs
         uses: actions/setup-node@v3
         with:
