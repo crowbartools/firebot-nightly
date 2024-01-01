@@ -24,7 +24,8 @@ const curDate = new Date();
 const year = curDate.getFullYear().toString().slice(-2);
 const month = ("0" + (curDate.getMonth() + 1)).slice(-2);
 const day = ('0' + curDate.getDate()).slice(-2);
-const nightlyversion = `${package.version}-nightly.${year}.${month}.${day}`;
+const baseVersion = package.version.split("-")[0];
+const nightlyversion = `${baseVersion}-nightly.${year}.${month}.${day}`;
 output('version', nightlyversion);
 
 // build patch-notes
