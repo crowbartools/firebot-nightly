@@ -17,7 +17,7 @@ jobs:
       dobuild: ${{ steps.dobuild.outputs.dobuild }}
     steps:
       - name: Checkout crowbartools/firebot:v5
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           clean: false
           fetch-depth: 0
@@ -26,7 +26,7 @@ jobs:
           path: '.'
 
       - name: Checkout crowbartools/firebot-nightly
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: './nightly/'
 
@@ -59,7 +59,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Firebot repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           clean: false
           repository: 'crowbartools/firebot'
@@ -67,7 +67,7 @@ jobs:
           path: '.'
 
       - name: Checkout Nightly Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: './nightly/'
 
@@ -77,10 +77,10 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '18.17.1'
+          node-version: '20.14.0'
 
       - name: Install correct npm version
-        run: npm install -g npm@10.2.4
+        run: npm install -g npm@10.8.1
 
       - name: Linux Build Prep
         if: runner.os == 'linux'
@@ -89,7 +89,10 @@ jobs:
       - name: MacOS Build Prep
         if: runner.os == 'macOS'
         # Force install this dep until node-appdmg then electron-installer-dmg gets updated
-        run: npm install github:SReject/electron-installer-dmg#9bdb5217b078c724918271549f34d362aecbf6bb
+        # appdmg will fail to install without python setuptools since gh runners now use python 3.12. See: https://github.com/electron/forge/issues/3371
+        run: |
+          brew install python-setuptools
+          npm install github:SReject/electron-installer-dmg#9bdb5217b078c724918271549f34d362aecbf6bb
 
       - name: Install Global Dependencies
         run: npm install --global --production --omit=dev grunt-cli node-gyp
