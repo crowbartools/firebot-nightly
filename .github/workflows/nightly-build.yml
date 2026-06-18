@@ -77,7 +77,7 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '22.19.0'
+          node-version: '20.19.0'
 
       - name: Install correct npm version
         run: npm install -g npm@10.8.1
