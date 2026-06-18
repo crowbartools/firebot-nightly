@@ -97,7 +97,7 @@ jobs:
         run: npm install --global --production --omit=dev grunt-cli node-gyp
 
       - name: Install Project Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Decrypt Secrets.gpg
         env:
