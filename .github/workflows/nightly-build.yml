@@ -77,10 +77,10 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '20.14.0'
+          node-version: '24.14.0'
 
       - name: Install correct npm version
-        run: npm install -g npm@10.8.1
+        run: npm install -g npm@11.9.0
 
       - name: Linux Build Prep
         if: runner.os == 'linux'
